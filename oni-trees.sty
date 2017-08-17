@@ -1,0 +1,308 @@
+\usetikzlibrary{decorations.markings}
+
+% From http://tex.stackexchange.com/questions/20425/z-level-in-tikz, does not work in this case.
+% \makeatletter
+% \pgfkeys{%
+%   /tikz/on layer/.code={
+%     \def\tikz@path@do@at@end{\endpgfonlayer\endgroup\tikz@path@do@at@end}%
+%     \pgfonlayer{#1}\begingroup%
+%   }%
+% }
+% \makeatother
+
+
+%%%%%%%%%%%
+% Hairy stuff copied from the manual, nothing interesting to see…
+\forestStandardNode[.]{%
+  \forestOve{\csname forest@id@of@standard node\endcsname}{content},%
+  \the\ht\strutbox,\the\pgflinewidth,%
+  \pgfkeysvalueof{/pgf/inner ysep},\pgfkeysvalueof{/pgf/outer ysep},%
+  \pgfkeysvalueof{/pgf/inner xsep},\pgfkeysvalueof{/pgf/outer xsep}%
+}{
+  l sep={0},%\the\ht\strutbox+\pgfkeysvalueof{/pgf/inner ysep}},
+  l={l_sep()+abs(max_y()-min_y())+2*\pgfkeysvalueof{/pgf/outer ysep}},
+  s sep={2*\pgfkeysvalueof{/pgf/inner xsep}}
+}{
+  l sep,l,s sep
+}
+%%%%%%%%%%%
+
+% Beamer animation stuff:
+\forestset{
+  all opacities/.style={opacity=#1,draw opacity=#1,fill opacity=#1,text opacity=#1,},
+  invisible/.style={
+    all opacities=0,
+    edge={/forest/all opacities=0,},
+    label style={/forest/all opacities=0,},
+    edge label node style={opacity=0,draw opacity=0,fill opacity=0,text opacity=0,},
+    edge label pin style={opacity=0,draw opacity=0,fill opacity=0,text opacity=0,},
+  },
+  invisible tree/.style={for tree={invisible},},
+  alt/.code args={<#1>#2#3}{
+    \alt<#1>{
+      \pgfkeysalso{#2}
+    }{
+      \pgfkeysalso{#3}
+    }
+  },
+  only/.code args={<#1>#2}{
+    \only<#1>{
+      \pgfkeysalso{#2}
+    }
+  },
+  only not/.code args={<#1>#2}{
+    \alt<#1>{
+    }{
+      \pgfkeysalso{#2}
+    }
+  },
+}
+
+\tikzset{
+  % only/.forward to={/forest/only},
+  % only not/.forward to={/forest/only not},
+  % all opacities/.forward to={/forest/all opacities},
+  all opacities/.style={opacity=#1,draw opacity=#1,fill opacity=#1,text opacity=#1,},
+  invisible/.style={all opacities=0,},
+  alt/.code args={<#1>#2#3}{
+    \alt<#1>{
+      \pgfkeysalso{#2}
+    }{
+      \pgfkeysalso{#3}
+    }
+  },
+  only/.code args={<#1>#2}{
+    \only<#1>{
+      \pgfkeysalso{#2}
+    }
+  },
+  only not/.code args={<#1>#2}{
+    \alt<#1>{
+    }{
+      \pgfkeysalso{#2}
+    }
+  },
+}
+
+% Handy node walk from one node to some ancestor
+\forestset{
+  define long step={current if not name}{n args=1}{if={strequal(name("!current"),"#1")}{}{current}},
+  define long step={ancestors from after name until before name}{n args=2}{if={strequal("#1","#2")}{}{fake={name=#1},ancestors until before name=#2}},
+  define long step=            {ancestors until before name}{n args=1}{if={strequal(name("!parent"),"#1")}{}{parent,ancestors until before name=#1,last valid}},
+  define long step={current and ancestors until before name}{n args=1}{current if not name=#1,ancestors until before name=#1},
+  define long step=            {ancestors until name}{n args=1}{ancestors until before name=#1,name=#1},
+  define long step={current and ancestors until name}{n args=1}{current if not name=#1,ancestors until before name=#1,name=#1},
+  declare toks={highlight path/from}{},
+  declare toks={highlight path/to}{},
+  declare toks={highlight path/first}{},
+  declare toks={highlight path/mid}{},
+  declare toks={highlight path/last}{},
+  declare toks={highlight path/edges}{},
+  highlight path/.style={
+    highlight path/.cd,
+    #1
+    /forest/.cd,
+    if={strequal(\forestoption{highlight path/from}, "")}{
+      /utils/exec={\pgfmathsetmacro\highlightPathFrom{name()}},
+      highlight path/from={\highlightPathFrom},
+    }{
+    },
+    for name/.expanded={\forestoption{highlight path/from}}{
+      \forestoption{highlight path/first},
+      if={strequal("\foresteoption{highlight path/from}","\foresteoption{highlight path/to}")}{
+      }{
+        edge+={\forestoption{highlight path/edges},},
+      },
+    },
+    % For some reason, putting \foresteoption{highlight path/to} directly in
+    % the second argument of "for ancestors from after name until before name"
+    % causes an error, so we're expanding it first into a macro.
+    /utils/exec={\edef\highlightPathTo{\foresteoption{highlight path/to}}},
+    for ancestors from after name until before name/.expanded={\foresteoption{highlight path/from}}{\highlightPathTo}{
+      \forestoption{highlight path/mid},
+      edge+={\forestoption{highlight path/edges},},
+    },
+    for name/.expanded={\forestoption{highlight path/to}}{\forestoption{highlight path/last}},
+  },
+}
+
+% These keys are available by default only in "\begin{forest}…\end{forest}",
+% but not in "\begin{tikzpicture}…\end{tikzpicture}". This is because the
+% full key name is "/forest/foo", instead of "/tikz/foo", and
+% "\begin{forest}" searches inside "/forest/" by default, whereas
+%   "\begin{tikzpicture}" searches inside "/tikz/" by default.
+\tikzset{
+  shorten/.style={shorten <=#1, shorten >=#1,},% Convenient alias to shorten the edge on both sides by the same amount
+  edge label distance/.forward to={/forest/edge label distance},% Alias for the forest-specific edge label distance declared below
+}
+\forestset{
+  % Circumvent bug in if={strequal("a","b")}{}{} when a or b contain math accents.
+  % Because math accents are expressed with \mathaccent "1234, the extra " character
+  % breaks the string, and I don't see an obvious way to escape it. This bug probably
+  % still lurks in all uses of strequal() in this and other files.
+  % Note this is defined as the /forest/ifstrequal key, not as /tikz/ifstrequal
+  ifstrequal/.code n args={4}{
+    \ifthenelse{\equal{#1}{#2}}{%
+      \forestset{#3}%
+    }{%
+      \forestset{#4}%
+    }%
+  },%
+  %
+  % Copied and adjusted from the forest manual, section "5.1 Decision tree" page 73 of manual version 2.0.3:
+  % http://mirrors.ctan.org/graphics/pgf/contrib/forest/forest-doc.pdf
+  anchors/.style={anchor=#1, child anchor=#1, parent anchor=#1},
+  declare keylist={label style}{},
+  declare keylist={edge label node style}{},
+  declare keylist={edge label pin style}{},
+  % edge label node/.style={},
+  % edge label pin/.style={},
+  declare boolean={edge label swapped}{false},
+  edge label swap/.style={
+    if={\forestoption{edge label swapped}}{
+      edge label swapped=false,
+    }{
+      edge label swapped=true,
+    }
+  },
+  if edge label swap/.style 2 args={
+    if={\forestoption{edge label swapped}}{
+      #1
+    }{
+      #2
+    }
+  },
+  /tikz/if edge label swap/.style 2 args={
+    /forest/if={\forestoption{edge label swapped}}{
+      #1
+    }{
+      #2
+    }
+  },
+  declare dimen={edge label distance}{0pt},
+  dot/.default=2pt,
+  label content/.style={
+    ifstrequal={#1}{}{
+      % Nothing to do, label is empty.
+    }{
+      % The label is implicitly named (xxx-label), where xxx is the node's name as given with [some label, name=xxx, …]
+      % But it currently doesn't work
+      /utils/exec={\pgfmathsetmacro{\dottreenode}{name()}},
+      label/.expanded={[alias=\dottreenode-label,\forestoption{label style}]:#1},% #1 is the label content.
+    },
+  },
+  %
+  edge label content/.style={
+    % edge label/.expanded={node[\forestoption{edge label style}] {#1}},
+    ifstrequal={#1}{}{
+      % No label, nothing to do.
+    }{
+      edge={
+        postaction={
+          draw,
+          decorate,
+          decoration={
+            markings,
+            mark=at position 0.5 with {
+              \tikzmath{
+                real \edgeLabelDirection;
+                if \forestoption{edge label swapped} then {
+                  \edgeLabelDirection = 1;
+                } else {
+                  \edgeLabelDirection = -1;
+                };
+              }
+              \coordinate (-mark1) at (0,0);
+              \coordinate (-mark2) at (0,-\edgeLabelDirection);
+              \pgftransformresetnontranslations
+              \tikzmath{
+                coordinate \markdiff,\marknorm;
+                real \markangle;
+                %% 
+                %% 
+                \markdiff=(-mark2) - (-mark1);
+                \marknormx=\markdiffx / sqrt(\markdiffx*\markdiffx + \markdiffy*\markdiffy);
+                \marknormy=\markdiffy / sqrt(\markdiffx*\markdiffx + \markdiffy*\markdiffy);
+                if \markdiffy == 0 then {
+                  if \markdiffx > 0 then {
+                    if \forestoption{edge label swapped} then {
+                      \markangle = 0;
+                    } else {
+                      \markangle = 180;
+                    };
+                  } else {
+                    if \forestoption{edge label swapped} then {
+                      \markangle = 0;
+                    } else {
+                      \markangle = 180;
+                    };
+                  };
+                } else {
+                  if \markdiffy > 0 then {
+                    \markangle = acos(\marknormx);
+                  } else {
+                    \markangle = 180+acos(-\marknormx);
+                  };
+                };
+              }
+              \tikzset{
+                edge label node style exp/.style/.expanded={\forestoption{edge label node style}},
+                edge label pin style exp/.style/.expanded={\forestoption{edge label pin style}},
+              }
+              \path (-mark1) ++(\markangle:\forestoption{edge label distance}) node[anchor=180+\markangle, edge label node style exp] (edge label) {#1};
+              \path (-mark1) edge[edge label pin style exp] (edge label);%++(\markangle:\forestoption{edge label distance});
+            },
+          },
+        },
+      },
+    },
+  },
+  dot/.style={
+    % This is delayed into a second processing pass, otheriwse the "content" is re-overridden by the explicitly set content
+    delay={
+      split option={content}{;}{label content,edge label content},
+      content={},% Remove the content from the node, as it is typeset into a separate label node.
+    },
+    ellipse,
+    fill,
+    inner sep=0pt,
+    minimum size=2*#1,% You can use […, dot] to get the default radius ("dot/.default=2pt", see just above), or […, dot=5pt] to choose the radius.
+  },
+  dot tree/.style={
+    for tree={% These options apply to all nodes in the (sub-)tree
+      dot,% Draw as a dot, defined above
+      % Position of the label:
+      if n children=0{% Leaf node, has "0 children"
+        label style+={label position=below},
+      }{% Non-leaf node
+        if n=1{% First (leftmost) child, has "current node index = 1"
+          label style+={label position=left},
+        }{% Other child
+          label style+={label position=right},
+        },
+      },
+      % Position of the edge label:
+      if n=1{% First (leftmost) child, has "current node index = 1"
+        edge label swap,
+      }{% Other child
+        edge label swap,
+      },
+    },
+    label style+={label position=above},% Override the label position for the label of the root node (for this subtree).
+    % There is no edge label style to override for the root, as it has no incoming edge label.
+  },
+  % Zig-zag distances
+  declare dimen={zig distance}{.3cm},
+  declare dimen={Zig distance}{.5cm},
+  declare dimen={ZIG distance}{.7cm},
+  % Zigs and zags can easily be swapped globally by puting the minus "-" sign in the zigs instead of the zags, if needed.
+  zig/.style={edge label swap, calign with current={#1},},
+  zig/.default={\forestoption{zig distance}},
+  Zig/.style={edge label swap, calign with current={\forestoption{Zig distance}},},
+  ZIG/.style={edge label swap, calign with current={\forestoption{ZIG distance}}, for parent={l sep+=.2cm,},},
+  %
+  zag/.style={calign with current={-#1},},
+  zag/.default={\forestoption{zig distance}},
+  Zag/.style={calign with current={-\forestoption{Zig distance}},},
+  ZAG/.style={calign with current={-\forestoption{ZIG distance}}, for parent={l sep+=.2cm,},},
+}

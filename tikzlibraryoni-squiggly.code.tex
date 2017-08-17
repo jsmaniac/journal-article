@@ -1,0 +1,83 @@
+\usetikzlibrary{decorations.growingwave}
+\tikzset{
+  small squiggly line fade in/.style={
+    -,% No arrow head
+    shorten >=0pt,%%%%%%%%%%%%%%%%%%%%%%%%%
+    decorate,
+    decoration={
+      growth wave,
+      growth start size=0pt,
+      growth end size=-1pt,%{-1pt,-1pt,0pt},%%%%%%%%%
+      % growth end steps={0.6,.7},
+      %growth end steps={0.2,0.6,1},%%%%%%%%
+      growth wave length=1pt,%{1pt,1pt,1pt},%%%%%
+      growth cosine,
+      % pre length=5mm,
+      post length=0mm,%%%%%%%%%%%%%%%%%%%%%%
+    },
+  },
+  small squiggly line no fade/.style={
+    -,% No arrow head
+    shorten >=0pt,%%%%%%%%%%%%%%%%%%%%%%%%%
+    decorate,
+    decoration={
+      growth wave,
+      growth start size=-1pt,
+      growth end size=-1pt,%{-1pt,-1pt,0pt},%%%%%%%%%
+      % growth end steps={0.6,.7},
+      % growth end steps={0.2,0.6,1},
+      growth wave length=1pt,%{1pt,1pt,1pt},%%%%%
+      growth cosine,
+      pre length=1pt,%%%%%%%%%%%%%%%%
+      post length=1pt,%%%%%%%%%%%%%%%%%%%%%%
+    },
+  },
+  squiggly line/.style={
+    -,% No arrow head
+    shorten >=0pt,%%%%%%%%%%%%%%%%%%%%%%%%%
+    decorate,
+    decoration={
+      growth wave,
+      growth start size=0pt,
+      growth end size=2pt,%{3pt,0pt},
+      % growth end steps={0.6,.7},
+      % growth end steps={0.8,1},
+      growth wave length=2pt,%{2pt,1pt},
+      growth cosine,
+      % pre length=5mm,
+      post length=0mm%%%%%%%%%%%%%%%%%%%%%%
+    },
+  },
+  squiggly arrow/.style={
+    ->,
+    shorten >=1.5pt,
+    decorate,
+    decoration={
+      growth wave,
+      growth start size=0pt,
+      growth end size=2pt,%{3pt,0pt},
+      % growth end steps={0.6,.7},
+      % growth end steps={0.8,1},
+      growth wave length=2pt,%{2pt,1pt},
+      growth cosine,
+      % pre length=5mm,
+      post length=2mm
+    },
+  },
+}
+
+\tikzset{
+  /forest/.cd, % Set forest styles
+  start squiggly tree/.style={
+    for children={
+      edge={small squiggly line fade in,},
+      continue squiggly tree,
+    }
+  },
+  continue squiggly tree/.style={
+    for children={
+      edge={small squiggly line no fade,},
+      continue squiggly tree,
+    }
+  }
+}

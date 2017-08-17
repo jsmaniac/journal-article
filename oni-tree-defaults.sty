@@ -1,0 +1,35 @@
+\forestset{
+  oni tree defaults/.style={
+    % These options apply to all nodes in the tree
+    for tree={
+      fit=band,% Use fit=tight for a more compact tree (see the docs at http://mirrors.ctan.org/graphics/pgf/contrib/forest/forest-doc.pdf )
+      label style+={% style for labels next to dots:
+        label distance=1pt,
+        ellipse,
+        inner sep=0.5pt,
+        fill=white!80!black,
+        fill opacity=0.4,% draw a semi-transparent background
+        text opacity=1,% but draw the text fully opaque
+      },
+      edge label distance={1mm},
+      edge label node style+={% Style for labels next to edges
+        ellipse,
+        inner sep=0.5pt,
+        fill=white!80!black,
+        fill opacity=0.4,% draw a semi-transparent background
+        text opacity=1,% but draw the text fully opaque
+      },
+      edge label pin style={
+        draw=none,
+        % draw,
+        % if edge label swap={bend left}{bend right},
+        % densely dotted,
+      },
+      l sep=5mm,% default inter-line separation
+    },
+    for level<={3}{l sep=2mm},% Make the first three rows much thinner
+    % Adjust a bit the horizontal (sibbling) spacing, because the labels currently are not taken into account.
+    for level={4}{s sep=.5cm},
+    for level={5}{s sep=.5cm},
+  }
+}

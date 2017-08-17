@@ -33,8 +33,8 @@
 \usepackage{forest}
 \usepackage{tikz,datetime}
 \usetikzlibrary{decorations.pathreplacing,trees,calc,fit,positioning,chains,arrows,arrows.meta,automata,shapes,graphs,shapes.geometric,shapes.symbols,
-decorations.markings,patterns,matrix,decorations.pathmorphing,mindmap,math}
-%,triangle-fit,decorations.growingwave,oni-squiggly}
+decorations.markings,patterns,matrix,decorations.pathmorphing,mindmap,math,
+triangle-fit,decorations.growingwave,oni-squiggly}
 \usepackage{pgf}
 \usepackage{pgfplots}
 \usepackage{graphicx}
@@ -53,20 +53,19 @@ decorations.markings,patterns,matrix,decorations.pathmorphing,mindmap,math}
 \restoresymbol{bb}{Cross}% Restore original \Cross from marvosym + rename bbding's \Cross to \bbCross.
 \usepackage{relsize} 
 \usepackage{wasysym}
-%\usepackage{growingwave}  
+\usepackage{growingwave}  
 \pgfdeclarelayer{background}
 \pgfdeclarelayer{foreground}
 \pgfsetlayers{background,main,foreground}
 \usepackage{epigraph} 
-%\usepackage{oni-trees}
-%\usepackage{oni-tree-defaults}
+\usepackage{oni-trees}
+\usepackage{oni-tree-defaults}
 %\usepackage[backend=bibtex,style=authoryear,natbib=true,maxbibnames=99]{biblatex}
 %% User the bibtex backend with the authoryear citation style (which
 %% resembles APA) 
 \usepackage{tikz,datetime}
 \usetikzlibrary{decorations.pathreplacing,trees,calc,fit,positioning,chains,arrows,arrows.meta,automata,shapes,graphs,shapes.geometric,shapes.symbols,
-decorations.markings,patterns,matrix,decorations.pathmorphing,mindmap,math}
-%,triangle-fit,decorations.growingwave,oni-squiggly}
+decorations.markings,patterns,matrix,decorations.pathmorphing,mindmap,math,triangle-fit,decorations.growingwave,oni-squiggly} 
 \usepackage{pgf}
 \usepackage{pgfplots}
 \usepackage{graphicx}
@@ -413,6 +412,7 @@ subset that is disjoint from an operation's \emph{frame}, i.e. the
 state subset it modifies.
 
 \subsection{Methodology}
+\label{sec:methodology}
 
 To this end, we propose a solution based on static analysis which does not
 require any additional frame annotations. By detecting the subset
@@ -2241,6 +2241,235 @@ ti $\mapsto$ $\top$\\
 \subsection{An inter-procedural extension}
 
 \section{Correlation analysis}
+\input{correlation-macros}
+
+Recall from Section~\ref{sec:methodology} that our overall methodology
+for tackling the frame problem consists in combining a dependency
+analysis with a correlation analysis, that identifies what part of the
+input is copied to the output without being modified. 
+%
+In this section, we present a static 
+\emph{correlation} analysis which, when given a predicate that manipulates a 
+structured input, determines automatically the subset of the input that remains 
+unchanged and is further propagated into the output. Thus, the behaviour of a
+predicate is summarised by computing relations between parts of the input and 
+parts of the output. 
+
+%The computed \emph{correlation summaries} are a safe 
+%approximation of what part of an input state of a predicate is copied to the 
+%output state. 
+
+The correlation analysis is a conservative static analysis inferring what is 
+modified by an operation and to what extent. It approximates the flow of input 
+values into output values, by uncovering \emph{equalities} and computing 
+\emph{correlations} as pairs between input parts and the output parts
+into which  these are injected. What is marked as being equal is
+definitely equal. As equalities iin general only pertain to parts of a data
+structure, we shall formalize them as \emph{partial equivalence
+relations} on structured data. 
+
+\begin{figure}[!h]
+\minipage[c]{\textwidth}
+\centering
+  \centering
+  \begin{forest}
+    oni tree defaults,
+    [, % Start directly with a comma: no node contents
+     phantom,% phantom == invisible node, just here for the layout. It is the fake "common ancestor" to both trees shown in this diagram
+     s sep=3.5cm,% Trees have two axes for layout s (sibling), the "horizontal" axis, and l (level), the "vertical" axis. Make the two trees separated by a centimeter
+     %
+     % Do not leave blank lines, always put a % when you want to skip a line, otherwise it crashes forest
+    %First 
+    [, dot tree,name=ba1, triangle fit whole subtree={bottom space=.15cm},% start squiggly tree,
+        [,zag=6mm,
+          [;$\pi$, zig=3mm, 
+            [,name=o1, zag=3mm, triangle fit whole subtree={triangle sep=1mm, bottom space=0.01cm, iburg,}, %pattern=north east lines, pattern color=iburg},
+               [, name=d1, invisible tree,
+             ]
+            ]
+          ]
+        ]
+        [,zig=5mm,
+          [,zag=2mm,
+            [, zig=1mm, 
+                [;$\rho$,name=g1, zag=2mm,triangle fit whole subtree={triangle sep=0.5mm, bottom space=0.01cm,draw=caribbeangreen, fill=caribbeangreen},
+                  [, invisible tree,
+                  ]
+              ]
+            ]
+          ]
+        ]
+      ]
+ %Second
+     [, dot tree,name=ba2, triangle fit whole subtree={bottom space=.1cm},% start squiggly tree,
+        [,zag=8mm
+          [, zig=2mm, 
+            [,name=ax2, zag=7mm, 
+             [,zig =2mm, 
+               [;$\pi'$, name=o2, zag=6mm,triangle fit whole subtree={triangle sep=1mm, bottom space=0.01cm,thick, iburg},  
+               [, name=d2, invisible tree,
+               ]
+              ]
+             ]
+            ]
+          ]
+        ]
+       [,zig=4mm
+          [, zag=2mm, 
+            [;$\rho'$,name=g2, zig=1mm, triangle fit whole subtree={triangle sep=0.5mm, bottom space=0.01cm, draw=caribbeangreen, fill=caribbeangreen},
+               [, invisible tree,
+               ]
+            ]
+          ]
+       ]
+      ]
+    ]
+   \draw[<->, shorten=2pt, thick, caribbeangreen] (g1) edge[bend left] node[above]{$\rel'$} (g2);
+   \draw[<->, shorten=2pt, thick, iburg] (o1) edge[bend right, out=60] node[below]{$\rel$} (o2);
+  \end{forest}
+\endminipage\hfill
+\caption{Intraprocedural Correlations -- General Representation}
+\label{cor:fig:intra}
+\end{figure}
+
+Outputs are often complex compounds of different subparts of different
+input variables: a subset of the input is modified, while the rest is
+injected as is.  We track the origin of subparts of the output and
+relate it to subparts of the input. As previously illustrated on our
+\disp{stop_thread} example predicate, in order to prevent avoidable
+over-approximations, we need to avoid dealing with data in a
+monolithic manner. To this end, it is imperative to consider pairs of
+different types and granularities as well. As a consequence, we are
+forced to introduce an additional level of granularity allowing us to
+refer not only to variables, but also to substructures within them. At
+the intraprocedural level, illustrated in Figure~\ref{cor:fig:intra},
+we define correlations as mappings between pairs of inputs and outputs
+to which we associate mappings between pairs of valid inner paths and
+the relations binding them. Correlations for arrays and variants are
+exemplified in 
+Figures~\ref{fig:cor:examples}-a)~and~\ref{fig:cor:examples}-b).
+
+\begin{figure}[!hbt]\centering
+\begin{tabular}{@{}cc@{}}
+\toprule
+\minipage{0.38\textwidth}
+ \centering
+  \begin{tikzpicture}[thick,scale=0.5, every node/.style={scale=0.5}]
+    % \node[shape=multipart rectangle,parts=2] {a\second b};
+    \matrix[matrix of nodes, row sep=0pt, column sep=0pt] (m) {
+      \phantom{i} &
+      \phantom{i} &
+      |[fill=gray!20!white,alias=mi]| \large{i} &
+      \phantom{i} &
+      \phantom{i} &
+      \phantom{i} &
+      \phantom{i} &
+      \phantom{i} \\
+    };
+
+    \draw (m-1-1.north west) -- (m-1-8.north east) -- (m-1-8.south east) -- (m-1-1.south west) -- cycle;
+    \foreach \i in {1,...,7} {% 8 - 1 to not have double line on the last cell.
+      \draw (m-1-\i.north east) -- (m-1-\i.south east);
+    }
+
+    \matrix[matrix of nodes, row sep=0pt, column sep=0pt, right=0.5cm of m] (n) {
+      \phantom{i} &
+      \phantom{i} &
+      |[fill=gray!20!white,alias=ni]| \large{i} &
+      \phantom{i} &
+      \phantom{i} &
+      \phantom{i} &
+      \phantom{i} &
+      \phantom{i} \\
+    };
+
+    \draw (n-1-1.north west) -- (n-1-8.north east) -- (n-1-8.south east) -- (n-1-1.south west) -- cycle;
+    \foreach \i in {1,...,7} {% 8 - 1 to not have double line on the last cell.
+      \draw (n-1-\i.north east) -- (n-1-\i.south east);
+    }
+    
+    \def\braceAmplitude{6pt}
+    \def\braceRaise{2pt}
+    
+    % decoration={…,mirror,…} to have the brace the other way round
+    \draw (m-1-1.south west) edge[decorate,decoration={brace,amplitude=\braceAmplitude,raise=\braceRaise,mirror}] node[coordinate,yshift=8pt] (mx) {} (m-1-8.south east);
+    \draw (n-1-1.south west) edge[decorate,decoration={brace,amplitude=\braceAmplitude,raise=\braceRaise,mirror}] node[coordinate,yshift=8pt] (nx) {} (n-1-8.south east);
+
+    % \draw (mi.south) edge[<->,>=stealth,looseness=.5,out=-70,in=-110,shorten <=1.5pt, shorten >=1.5pt] node[below]{\large$\mathcal{R}$} (ni.south);
+    \draw ([yshift=-1cm]mx) edge[<->,>=stealth,looseness=.5,out=-70,in=-110] node[below]{\large$\rel$} ([yshift=-1cm]nx);
+    
+    % Background:
+    \path[fill=white,opacity=.3]
+      ($(mi.north west) + (0, \braceAmplitude*0.5+\braceRaise) + (0,1pt)$)
+      rectangle
+      ($(mi.north east) + (0, \braceAmplitude*0.5+\braceRaise) - (0,1pt)$);
+        
+    \coordinate (miX) at ($(mi.north west) + (0, \braceAmplitude*0.5+\braceRaise) + (1pt,0)$);
+    \coordinate (miY) at ($(mi.north east) + (0, \braceAmplitude*0.5+\braceRaise) - (.5pt,0)$);
+
+    % \foreach \i in {0,0.2,...,1} {
+    %   \draw[black!70] ($(miX)!\i!(miY)-(1pt,1pt)$) -- ($(miX)!\i!(miY)+(1pt,1pt)$);
+    % }
+ 
+    %%%%
+
+    % Background:
+    \path[fill=white,opacity=.3]
+      ($(ni.north west) + (0, \braceAmplitude*0.5+\braceRaise) + (0,1pt)$)
+      rectangle
+      ($(ni.north east) + (0, \braceAmplitude*0.5+\braceRaise) - (0,1pt)$);
+
+    \coordinate (niX) at ($(ni.north west) + (0, \braceAmplitude*0.5+\braceRaise) + (1pt,0)$);
+    \coordinate (niY) at ($(ni.north east) + (0, \braceAmplitude*0.5+\braceRaise) - (.5pt,0)$);
+  \end{tikzpicture}
+
+\endminipage
+\minipage{0.35\textwidth}
+  \centering
+  \begin{tikzpicture}  [thick,scale=0.55, every node/.style={scale=0.55}]
+  \pgfmathsetseed{\rndseed}
+  \triangleArray{n}{(0,0)}
+
+  \pgfmathsetseed{\rndseed}
+  \triangleArray{m}{($(n-0.south west) + (.5cm,-1cm)$)}
+  
+  % Arrows:
+  \foreach \i in {0,...,\nbnodes} {%
+    % Centers: tc
+    % Top: tt, left: tl, right: tr, bottom: tb
+    \draw (n-tb-\i) edge[<->,>=stealth,out=-90,in=90, shorten <=.5pt, shorten >=.5pt] (m-tt-\i);
+  }
+  
+  \end{tikzpicture}
+\endminipage%
+\\
+\hspace{-0.1\textwidth}\minipage{0.48\textwidth}
+\centering\small a) Arrays: $\;\forall i, \;  a{\left[i\right]} \mathbin{\rel} b{\left[i\right]}$
+\endminipage\hspace{-0.1\textwidth}
+\minipage{0.25\textwidth}
+\centering\small b) Variants
+\endminipage
+\\
+\bottomrule
+\end{tabular}
+\caption{Intraprocedural Domain -- Examples}
+\label{fig:cor:examples}
+\end{figure}
+
+Similarly to our dependency analysis presented in Chapter~\ref{chapter5}, the
+correlation analysis is an interprocedural, flow-sensitive, field-sensitive, 
+label-sensitive analysis that handles associative arrays, structures and variant 
+data types. However, unlike the dependency analysis for which we introduced a 
+relaxed form of context-sensitivity in Chapter~\ref{chapter6}, the correlation 
+analysis is context-insensitive. Fine-grained equivalence relations between the
+inputs and outputs of a predicate are computed once and subsequently propagated
+to its callers.  
+
+Our correlation analysis is meant to be used in an interactive verification 
+context. Precise correlation summaries must be computed quickly in order to 
+answer effectively, when combined with dependency summaries, queries 
+regarding the preservation of certain invariants. 
+
 
 \subsection{Introductory example}
 

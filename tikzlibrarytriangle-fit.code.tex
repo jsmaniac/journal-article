@@ -1,0 +1,189 @@
+% %%%%%%%
+% % From http://tex.stackexchange.com/questions/314053/how-to-declare-a-tikz-directory-or-group-of-keys/314065?noredirect=1#comment765927_314065
+% \pgfkeys{
+%   /handlers/.is directory/.code={
+%     \pgfkeysedef{\pgfkeyscurrentpath}{
+%       \noexpand\pgfkeys{\pgfkeyscurrentpath/.cd,##1‌​}
+%     }
+%   }
+% }
+% %%%%%%%
+
+\tikzmath{
+  function sign(\x) {
+    if (\x < 0) then {
+      return -1;
+    } else {
+      if (\x > 0) then {
+        return 1;
+      } else {
+        return 0;
+      };
+    };
+  };
+}
+
+\newif\iftrianglefitisosceles
+\newif\iftrianglefitbackground
+\tikzset{
+  triangle fit current style/.style={},
+  triangle fit current background style/.style={},
+  triangle fit/.unknown/.code={
+    % \message{triangle fit unknown:\pgfkeyscurrentkeyRAW=#1^^J}
+    \let\trianglefitstorekey=\pgfkeyscurrentkeyRAW
+    \edef\triangleExp{
+      \noexpand\tikzset{
+        /tikz/triangle fit current style/.append style={
+          \trianglefitstorekey=\noexpand#1
+        }
+      }
+    }
+    \triangleExp
+    %\pgfqkeys{/tikz}{}
+  },
+  triangle fit/triangle sep/.initial=0.15em,
+  triangle fit/triangle sep/.default=0.15em,
+  triangle fit/top space/.initial=1.5ex,
+  triangle fit/top space/.default=1.5ex, 
+  triangle fit/top xshift/.initial=0pt,
+  triangle fit/top xshift/.default=0pt,
+ triangle fit/bottom space/.initial=0ex,
+  triangle fit/bottom space/.default=0ex,
+  triangle fit/top/.initial=,
+  triangle fit/nodes/.initial=,
+  triangle fit/no rounded corners/.style={/tikz/rounded corners=0pt},
+  every triangle fit/.style={
+    triangle sep=.15em,
+    rounded corners=5pt,
+    isosceles,
+  },
+  triangle fit/isosceles/.is if=trianglefitisosceles,
+  triangle fit/not isosceles/.style={isosceles=false},
+  triangle fit/bg+/.code={
+    \tikzset{
+      triangle fit current background style/.style={#1},
+    }
+  },
+  triangle fit/.code={
+    \tikzset{
+      /tikz/triangle fit current style/.style={},
+      /tikz/triangle fit/.cd,
+      /tikz/every triangle fit,
+      #1,
+    }
+    % \node[draw, /tikz/every triangle fit] {EEE}
+    % \edef\currenttrianglestyle{\pgfkeysvalueof{/tikz/triangle fit/style}}
+    % \message{\currenttrianglestyle}
+    % \tikzset{
+    %   triangle fit current style/.style=\currenttrianglestyle,
+    % }
+    % Compute the minimum and maxiumum slope, as well as the maximum y (i.e. height) for the triangle.
+    \tikzmath{
+      coordinate \pt,\ttop;
+      % int \found;
+      % \found{top} = 0;
+      % \found{bot} = 0;
+      \ttop=(\pgfkeysvalueof{/tikz/triangle fit/top}) + (\pgfkeysvalueof{/tikz/triangle fit/top xshift},\pgfkeysvalueof{/tikz/triangle fit/top space}+\pgfkeysvalueof{/tikz/triangle fit/triangle sep});
+      \slopeleft = 0;
+      \sloperight = 0;
+      \maxdy = 0;
+    }
+    % Foreach loop over all nodes, which computes the max and min slopes and triangle height
+    \edef\triangleFitItems{\pgfkeysvalueof{/tikz/triangle fit/nodes}}
+    \foreach \i in \triangleFitItems{
+      \foreach \ii/\sgx/\sgy in {(\i.north east)/1/1,(\i.south east)/1/-1,(\i.south west)/-1/-1,(\i.north west)/-1/1} {
+        \tikzmath{
+          \pt = \ii;
+          \dx = \ptx - \ttopx;
+          \dx = \dx + \pgfkeysvalueof{/tikz/triangle fit/triangle sep} * \sgx;%sign(\dx);
+          \dy = \ttopy - \pty;
+          \dy = \dy + \pgfkeysvalueof{/tikz/triangle fit/triangle sep} * \sgy;%sign(\dy);
+          \slope = \dx / \dy;
+          if \slope > \sloperight then {
+            \sloperight = \slope;
+          };
+          if \slope < \slopeleft then {
+            \slopeleft = \slope;
+          };
+          if \dy > \maxdy then {
+            \maxdy = \dy;
+          };
+        }
+% \begin{pgfonlayer}{foreground}
+% \path (\ttopx,\ttopy) ++(\dx pt,-\dy pt) node[fill=blue,circle,inner sep=0.3pt] {};          
+% \end{pgfonlayer}
+        \global\let\sloperight\sloperight%
+        \global\let\slopeleft\slopeleft%
+        \global\let\maxdy\maxdy%
+        % \message{\ii, ptx=\ptx, pty=\pty, dx=\dx, dy=\dy, slope=\slope, sloperight=\sloperight, slopeleft=\slopeleft, maxdy=\maxdy^^J}
+      }
+    }
+    \tikzmath{
+      \maxdy = \maxdy + \pgfkeysvalueof{/tikz/triangle fit/bottom space};
+    }
+    \iftrianglefitisosceles
+      \tikzmath{
+        if -\sloperight < \slopeleft then {
+          \slopeleft = -\sloperight;
+        };
+        if -\slopeleft > \sloperight then {
+          \sloperight = -\slopeleft;
+        };
+      }
+    \fi
+    % Draw the background
+    \begin{pgfonlayer}{background}
+      \path[/tikz/triangle fit current style, /tikz/triangle fit current background style]
+        (\ttopx,\ttopy)
+        -- +(\sloperight*\maxdy pt,-\maxdy pt)
+        -- +(\slopeleft*\maxdy pt,-\maxdy pt)
+        -- cycle;      
+    \end{pgfonlayer}
+    %
+    % Draw the triangle:
+    \begin{pgfonlayer}{background}% Draw it on the background, it gives better results for now.
+    \draw[/tikz/triangle fit current style]
+      (\ttopx,\ttopy)
+      -- +(\sloperight*\maxdy pt,-\maxdy pt)
+      -- +(\slopeleft*\maxdy pt,-\maxdy pt)
+      -- cycle;
+    \end{pgfonlayer}
+  }
+}
+
+\def\nodx{
+  node[draw, every triangle fit, triangle fit={top={\fittriangletop},nodes={\fittriangletop\foresteoption{fit these}}}] {nodes:\fittriangletop\foresteoption{fit these}}
+}
+\forestset{
+%  every triangle fit/.forward to=/tikz/every triangle fit,
+  every triangle fit/append/.forward to=/tikz/every triangle fit/append,
+  every triangle fit/style/.forward to=/tikz/every triangle fit/style,
+  declare toks={fit these}{},
+  triangle fit whole subtree/.style={
+    delay={
+      temptoksa=,
+      for descendants={%
+        temptoksa+/.wrap pgfmath arg={,##1}{name()},
+      },
+      fit these/.register=temptoksa,
+      delay={
+        % /utils/exec={
+        %   \pgfmathsetmacro{\fittriangletop}{name()}
+        %   \message{^^JFIT THESE=\foresteoption{fit these}, NAME=\fittriangletop^^J}
+        % },
+        % append after command={
+        %   \nodx
+        % },
+        tikz+={
+          \pgfmathsetmacro{\fittriangletop}{name()}
+          % \message{\foresteoption{fit these}}
+          \path[triangle fit={
+            top=\fittriangletop.parent anchor,
+            nodes={\fittriangletop\foresteoption{fit these}},
+            #1
+          }];
+        },
+      },
+    },
+  },
+}

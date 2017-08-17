@@ -1,0 +1,234 @@
+
+%%Macros
+% This is the definition of meet_r
+\def\meetR{%
+  \alignedmathop{%
+    \bigwedge%
+  }{%
+    \mathchoice%
+    {\bigwedge\mkern-0.5mu\smash{\raisebox{-0.9ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{R}}}}$}}}%
+    {\bigwedge\mkern-1.5mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{R}}}}$}}}%
+    {\bigwedge\mkern-2.25mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{R}}}}$}}}%
+    {\bigwedge\mkern-2.5mu\smash{\raisebox{-0.35ex}{$\resetstyle\mathlarger{{}_{\mathcal{R}}}$}}}%
+  }%
+}
+%
+% This is the definition of join_k
+\def\ijoin{%
+  \alignedmathop{%
+    \bigvee%
+  }{%
+    \mathchoice%
+    {\bigvee\mkern-6mu\smash{\raisebox{-0.9ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{K}}}}$}}}%
+    {\bigvee\mkern-5mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{K}}}}$}}}%
+    {\bigvee\mkern-2.25mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{K}}}}$}}}%
+    {\bigvee\mkern-2.5mu\smash{\raisebox{-0.35ex}{$\resetstyle\mathlarger{{}_{\mathcal{K}}}$}}}%
+  }%
+}
+\def\largeijoin{%
+  \alignedmathop{%
+    \bigvee%
+  }{%
+    \mathchoice%
+    {\bigvee\mkern-7mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{{}_{\mathcal{K}}}$}}}%
+    {\bigvee\mkern-5mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{K}}}}$}}}%
+    {\bigvee\mkern-2.25mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\mathcal{K}}}}$}}}%
+    {\bigvee\mkern-2.5mu\smash{\raisebox{-0.35ex}{$\resetstyle\mathlarger{{}_{\mathcal{K}}}$}}}%
+  }%
+}
+
+
+
+%%For Tikz figures
+%%%%% Custom pattern definition (not my code):
+% defining the new dimensions
+  \newlength{\hatchspread}
+  \newlength{\hatchoffset}
+  \newlength{\hatchthickness}
+  % declaring the keys in tikz
+  \tikzset{
+    hatchspread/.code={\setlength{\hatchspread}{#1}},
+    hatchoffset/.code={\setlength{\hatchoffset}{#1}},
+    hatchthickness/.code={\setlength{\hatchthickness}{#1}}
+  }
+  % setting the default values
+  \tikzset{
+    hatchspread=.5cm,
+    hatchoffset=0.4pt,
+    hatchthickness=0.4pt
+  }
+  % declaring the pattern
+  \pgfdeclarepatternformonly[\hatchspread,\hatchthickness]% variables
+     {custom north east lines}% name
+     {\pgfqpoint{-2\hatchthickness}{-2\hatchthickness}}% lower left corner
+     {\pgfqpoint{\dimexpr\hatchspread+2\hatchthickness}{\dimexpr\hatchspread+2\hatchthickness}}% upper right corner
+     {\pgfqpoint{\hatchspread}{\hatchspread}}% tile size
+     {% shape description
+      \pgfsetlinewidth{\hatchthickness}
+      \pgfpathmoveto{\pgfqpoint{0pt}{\hatchoffset}}
+      \pgfpathlineto{\pgfqpoint{\dimexpr\hatchspread-\hatchoffset}{\hatchspread}}
+      \pgfpathmoveto{\pgfqpoint{\dimexpr\hatchspread-\hatchoffset}{0pt}}
+      \pgfpathlineto{\pgfqpoint{\dimexpr\hatchspread}{\hatchoffset}}
+      \pgfusepath{stroke}
+     }
+%%%%% End custom pattern definition.
+
+%\pgfmathparse{\year+\time+\currenthour+\currentminute*\currentsecond}
+\edef\rndseed{4101} %%%%% To choose a fixed seed
+%\edef\rndseed{\pgfmathresult} %%%%% Random seed
+\pgfmathsetseed{\rndseed}
+
+\def\cellw{.7cm}
+\def\cellh{.8cm}
+\def\minth{.15cm}
+\def\vtpadding{.2cm}
+\def\vbpadding{.1cm}
+\def\hpadding{.05cm}
+\def\nbnodes{4}
+\def\minrand{0.3}
+\def\borderh{0.2cm}
+
+\def\triangleArray#1#2{
+  \foreach \i in {0,...,\nbnodes} {%
+    \node[inner sep=0pt,minimum height=\cellh, minimum width=\cellw, alias=#1-last, anchor=north west, xshift=\i*\cellw] (#1-\i) at #2 {};
+    
+    % Magic coordinate calculations
+    % Fixed top position:
+    \pgfmathsetmacro{\tpos}{0}
+    % Random top position:
+    % \pgfmathsetmacro{\tpos}{rnd*(1-\minrand)+\minrand}
+    \pgfmathsetmacro{\trih}{rnd*(1-\minrand)+\minrand}
+    \def\tposformula{(\vtpadding+\tpos*(\cellh-\minth-\vtpadding-\vbpadding))}
+    \def\thformula{min(\trih*(\cellh-\tposformula-\vbpadding), \cellw*(1/.5555)*.5-2*\hpadding)}
+    % Triangle:
+    \draw #2 ++(\i*\cellw+.5*\cellw,{-\tposformula}) coordinate (#1-tt-\i) -- ++({.5555*\thformula},{-\thformula}) coordinate (#1-tr-\i) -- ++({-.5555*\thformula*2},0) coordinate (#1-tl-\i) -- cycle;
+    \coordinate (#1-tc-\i) at (barycentric cs:#1-tt-\i=1,#1-tr-\i=1,#1-tl-\i=1);
+    \coordinate (#1-tb-\i) at ($(#1-tl-\i)!.5!(#1-tr-\i)$);
+  }
+  
+  % \draw (#1-0.north west) ++(0,\borderh) -- ($(#1-last.north east)+(0,\borderh)$) -- (#1-last.south east) -- (#1-0.south west) -- cycle;
+  % \draw (#1-0.north west) -- (#1-last.north east);
+
+  \draw (#1-last.north east) -- (#1-last.south east) -- (#1-0.south west) -- (#1-0.north west);
+  \draw[fill=black!7] (#1-0.north west) -- (#1-last.north east) -- ++(0,\borderh) -- ($(#1-0.north west)+(0,\borderh)$) -- cycle;
+  
+  \foreach \i in {1,...,\nbnodes} {
+    \draw (#1-\i.north west) -- (#1-\i.south west);
+  }
+}
+
+%Leq for pequiv
+\def\rleq{\mathrel{\sqsubseteq_{\kern0.15pt\rdom}}}
+\def\rjoin{\mathrel{\vee_{\kern-0.25pt\rdom}}}
+\def\rmeet{\mathrel{\wedge_{\kern0.15pt\rdom}}}
+%\DeclareMathOperator*{\rbigwedge}{\bigwedge_\rdom}
+
+
+%Macros for pequiv relations
+\def\rdom{\mathscr{R}}
+\def\equal{\textsf{Equal}}
+\def\qmark{\textsf{Any}}
+
+%\def\rel{\mathit{\mathcal{R}}}
+\def\rel{R}
+\newcommand{\srel}[2]{\{#1_1 \mapsto \rel_1; \ldots; #1_{#2} \mapsto \rel_{#2}\}}
+\newcommand{\sreljoin}[2]{\{#1_1 \mapsto \rel_1 \rjoin \rel'_1; \ldots; #1_{#2} \mapsto \rel_{#2} \rjoin \rel'_{#2} \}}
+\newcommand{\srelmeet}[2]{\{#1_1 \mapsto \rel_1 \rmeet \rel'_1; \ldots; #1_{#2} \mapsto \rel_{#2} \rmeet \rel'_{#2} \}}
+\newcommand{\sreli}[2]{\{#1_1 \mapsto \rel_1; \ldots; #1_i \mapsto \rel_i; \ldots; #1_{#2} \mapsto \rel_{#2}\}}
+\newcommand{\srelitop}[3]{\{#1_1 \mapsto \qmark; \ldots; #1_i \mapsto #3; \ldots; #1_{#2} \mapsto \qmark\}}
+\def\srelibot{\{f_1 \mapsto \equal; \ldots; f_i \mapsto \qmark; \ldots; f_n \mapsto \equal\}}
+
+\newcommand{\vrel}[2]{[#1_1 \mapsto \rel_1; \ldots; #1_{#2} \mapsto \rel_{#2}]}
+\newcommand{\vreljoin}[2]{[#1_1 \mapsto \rel_1 \rjoin \rel'_1; \ldots; #1_{#2} \mapsto \rel_{#2} \rjoin \rel'_{#2}]}
+\newcommand{\vrelmeet}[2]{[#1_1 \mapsto \rel_1 \rmeet \rel'_1; \ldots; #1_{#2} \mapsto \rel_{#2} \rmeet \rel'_{#2}]}
+\newcommand{\vreli}[2]{[#1_1 \mapsto \rel_1; \ldots; #1_i \mapsto \rel_i; \ldots; #1_{#2} \mapsto \rel_{#2}]}
+\newcommand{\vrelitop}[3]{[#1_1 \mapsto \qmark; \ldots; #1_i \mapsto #3; \ldots; #1_{#2} \mapsto \qmark]}
+
+
+\newcommand{\arel}[1]{\langle #1 \rangle} 
+\newcommand{\aerel}[3]{\left\langle #1 \triangleright #2: \; #3 \right\rangle}
+\newcommand{\aerelnoleftright}[3]{\langle #1 \triangleright #2: \; #3 \rangle}
+
+\newcommand{\rels}{\srel{f}{n}}
+\newcommand{\relsi}{\sreli{f}{n}}
+\newcommand{\relv}{\vrel{C}{n}}
+\newcommand{\relvi}{\vreli{C}{n}}
+\newcommand{\rela}{\arel{\rel}}
+\newcommand{\relai}{\langle \rel_{\mathit{def}} \triangleright i \;: \; \rel_{\mathit{exc}} \rangle}
+\def\relaitop{\langle \equal \triangleright i \;: \; \qmark \rangle}
+
+\newcommand{\srelv}[3]{\{#1_1 \mapsto #3_1; \ldots; #1_{#2} \mapsto #3_{#2}\}}
+\newcommand{\vrelv}[3]{[#1_1 \mapsto #3_1; \ldots; #1_{#2} \mapsto #3_{#2}]}
+
+\newcommand{\semrel}[2]{\llbracket #1 \rrbracket^{#2}}
+
+
+%Projections on pequiv
+\def\fieldp{\textrm{\textsf{\emph{extr}}}_f}
+\def\consp{\textrm{\textsf{\emph{extr}}}_C}
+\def\allp{\textrm{\textsf{\emph{extr}}}_{\langle * \rangle}}
+\def\cellp{\textrm{\textsf{\emph{extr}}}_{\langle i \rangle}}
+\def\outp{\textrm{\textsf{\emph{extr}}}_{\langle * \setminus i \rangle}}
+
+
+%Macros for paths
+\def\pcell{\langle i \rangle}
+\def\pstruct{.f}
+\def\pvar{@C}
+\def\pempty{\widehat{\varepsilon}}
+\def\identical{\textsf{Identical}}
+\def\incompatible{\textsf{Incompatible}}
+\def\leftcase{\textsf{Left}}
+\def\rightcase{\textsf{Right}}
+\def\findl{\curlywedge}
+\def\append{\dblcolon}
+
+%Macros for path operators:
+%\DeclareMathOperator{\pproj}{\rightsquigarrow}
+%\DeclareMathOperator{\pinj}{\curvearrowleft}
+
+%Macros for correlations
+%\def\cor{\hat{\mathcal{C}}}
+\def\cor{\mathscr{K}}
+%\def\corv{\hat{c}}
+\def\corv{\kappa}
+\def\aleq{\mathrel{\hat{\sqsubseteq}}}
+%\DeclareMathOperator*{\ajoin}{\hat{\bigvee}}
+%\DeclareMathOperator*{\hatbigwedge}{\hat{\bigwedge}}
+\def\acompose{\mathop{\ocircle}}
+\def\raligned{\rel_{\aligned(\pi', \rho')}^{(\pi, \rho)}}
+\def\ralignedc{\rel_{\aligned\corv}^{(\pi, \rho)}}
+\def\ralignedv{\rel_{\aligned\corv_1}^{(\pi, \rho)}}
+\def\ralignedw{\rel_{\aligned\corv_2}^{(\pi, \rho)}}
+
+%Macros for intra domains
+\def\ileq{\sqsubseteq_{\mathcal{K}}}
+%\def\ijoin{\bigvee_{\mathcal{K}}}
+\def\justif{\Vvdash}
+\def\aligned{\parallel}
+\def\intracor{K}
+\def\compose{\odot}
+
+%Macros for equations
+\newcommand{\Ctransfer}[3]{\mathbb{C}^{#2}_{#3}(#1)}
+
+\def\inter{\mathcal{K}_p}
+%Colors
+%\definecolor{indianred}{rgb}{0.8, 0.36, 0.36}
+\definecolor{iburg}{rgb}{0.75, 0.0, 0.2}
+
+% hat math variables
+
+\def\cptype{\ensuremath{\widehat{\Pi}}}
+\def\cpath{\ensuremath{\widehat{\pi}}}
+\def\crho{\ensuremath{\widehat{\rho}}}
+\def\csigma{\ensuremath{\widehat{\sigma}}}
+\def\calpha{\ensuremath{\widehat{\alpha}}}
+\def\cbeta{\ensuremath{\widehat{\beta}}}
+\def\cgamma{\ensuremath{\widehat{\gamma}}}
+\def\cdelta{\ensuremath{\widehat{\delta}}}
+
+\def\kset{$\textrm{\emph{kill}}_\lambda$}
+\def\kseti{$\textrm{\emph{kill}}_i$}
+\def\ksettrue{$\textrm{\emph{kill}}_{\mathit{true}}$}
+\def\dls{c_{\lambda}^s}
