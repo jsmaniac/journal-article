@@ -1,0 +1,244 @@
+%%% Macros %%%
+
+%% % Values
+
+%% %Variant Values
+%% \newcommand{\plainvval}[4]
+%% {\ensuremath{#1_{#2}[#3_{#4}] }}
+
+%% \newcommand{\plainvvalindex}[1]
+%% {\ensuremath{C_{#1}[v_{#1}]}}
+
+%% \def\commonvval{\plainvval{C}{i}{v}{i}}
+
+
+%% Dependency macros
+
+%% \addto\captionsenglish{
+%% \renewcommand{\tablename}{Figure}
+%% }
+\newcolumntype{L}[1]{>{\raggedright}m{#1}}
+%misc macros
+\newcommand{\comment}[1]{\ifdraft{\small\textbf{#1}}{}}
+
+\def\inputs{\ensuremath{\mathcal{I}}}
+\def\writ{\mathscr{V}^{+}}
+
+\newcommand\mmyrbox[2][fill=red!20]{%
+    \tikz[baseline]\node[%
+        inner ysep=0pt, 
+        inner xsep=2pt, 
+        anchor=text, 
+        rectangle, 
+        rounded corners=1mm,
+        #1] {\strut#2};%
+}
+
+\newcommand\mmygbox[2][fill=lightgray!30]{%
+    \tikz[baseline]\node[%
+        inner ysep=0pt, 
+        inner xsep=2pt, 
+        anchor=text, 
+        rectangle, 
+        rounded corners=1mm,
+        #1] {\strut#2};%
+}
+
+\def\everything{\ensuremath \top}
+\def\nothing{\ensuremath \oslash}
+\def\impossible{\ensuremath \bot}
+
+%dependency domain macros
+\def\udep{\mathcal{D}}
+\def\dom{\mathit{\delta}}
+\newcommand{\structdom}[2]{\{#1; \ldots; #2\}}
+\newcommand{\vardom}[2]{[#1; \ldots; #2]}
+\newcommand{\adom}[1]{\langle #1 \rangle} 
+\newcommand{\aexcdom}[3]{\langle #1 \triangleright #2: \; #3 \rangle}
+\newcommand{\adomusual}{\langle \dom_{\mathit{def}} \triangleright i \;: \; \dom_{\mathit{exc}} \rangle}
+\newcommand{\addef}{\langle \dom_{\mathit{def}} \triangleright i \;: \; \dom_{\mathit{exc}} \rangle}
+
+\newcommand{\dstruct}[1]{f_{#1} \mapsto \dom_{#1}}
+\newcommand{\dostruct}[1]{f_{#1} \mapsto \dom'_{#1}}
+\newcommand{\djstruct}[1]{f_{#1} \mapsto \dom_{#1} \vee \dom'_{#1}}
+\newcommand{\djnothingstruct}[1]{f_{#1} \mapsto \oslash \vee \dom_{#1}}
+\newcommand{\dmstruct}[1]{f_{#1} \mapsto \dom_{#1} \oplus \dom'_{#1}}
+
+
+\newcommand{\dvar}[1]{C_{#1} \mapsto \dom_{#1}}
+\newcommand{\dovar}[1]{C_{#1} \mapsto \dom'_{#1}}
+\newcommand{\djvar}[1]{C_{#1} \mapsto \dom_{#1} \vee \dom'_{#1}}
+\newcommand{\djnothingvar}[1]{C_{#1} \mapsto \oslash \vee \dom_{#1}}
+\newcommand{\dmvar}[1]{C_{#1} \mapsto \dom_{#1} \oplus \dom'_{#1}}
+
+\newcommand{\deferred}[1]{\textrm{\textbf{\textsf{Deferred}}}(#1)}
+
+
+\newcommand{\subst}{\blacktriangleleft(\sigma, \phi)}
+
+\def\ddef {\ensuremath{\mathit{\dom_{def}}}}
+\def\dexc {\ensuremath{\mathit{\dom_{exc}}}}
+\def\dodef{\ensuremath{\mathit{\dom'_{def}}}}
+\def\doexc{\ensuremath{\mathit{\dom'_{exc}}}}
+
+\def\dleq{\sqsubseteq}
+
+%intra macros
+\def\intra{\Delta}
+
+%inter macro
+\def\inter{\mathscr{D}}
+%% \def\defstruct{ \{.f_1\pi_1, \; \ldots, \; .f_n\pi_n\} }
+%% \def\defstructo{ \{.f_1\pi'_1, \; \ldots, \; .f_n\pi'_n\} }
+%% \def\defvar{[@C_1\pi_1, \; \ldots, \;@C_n\pi_n]}
+%% \def\defvaro{[@C_1\pi'_1, \; \ldots, \;@C_n\pi'_n]}
+%% \def\defcell{\langle i \rangle \pi_{\mathit{exc}}}
+%% \def\defcello{\langle i \rangle \pi'_{\mathit{exc}}}
+%% \def\defout{\langle * \setminus i \rangle \pi_{\mathit{out}}}
+%% \def\defouto{\langle * \setminus i \rangle \pi'_{\mathit{out}}}
+%% \def\defarr{\langle * \rangle \pi_{\mathit{def}}}
+%% \def\defarro{\langle * \rangle \pi'_{\mathit{def}}}
+%% \def\pexc{\pi_{\mathit{exc}}}
+%% \def\pdef{\pi_{\mathit{def}}}
+%% \def\piout{\pi_{\mathit{out}}}
+%% \def\pleq{\underset{\circ}{\dleq}}
+%% \def\pjoin{\underset{\circ}{\vee}}
+%% \def\pf{\underset{\circ}{.f}}
+%% \def\pc{\underset{\circ}{@C}}
+%% \def\pind{\underset{\circ}{\langle i \rangle}}
+%% \def\pout{\underset{\circ}{\langle * \setminus i \rangle}}
+%% \def\parr{\underset{\circ}{\langle * \rangle}}
+%% \def\wtpath{\underset{\circ}{\vdash}}
+%% \def\wfpath{\underset{\circ}{\vDash}}
+%% \def\app{\mathit{::}\pi_a }
+%% \def\appf{\mathit{::}.f }
+%% \def\appc{\mathit{::}@C }
+%% \def\appa{\mathit{::}\langle * \rangle}
+%% \def\appo{\mathit{::}\langle * \setminus i \rangle}
+%% \def\appi{\mathit{::}\langle i \rangle}
+
+%equations macros
+\newcommand{\transfer}[3]{\llbracket#2\rrbracket_{#3}(#1)}
+\newcommand{\killo}[2]{(\intra_{#1} \setminus #2)}
+\def\binlabels{
+ \begin{tabular}{@{}l@{}}
+$\lambda_{true}$ \\\\
+$\lambda_{false}$ \\
+\end{tabular} }
+\def\ltrue{\lambda_{true}}
+
+%join comment macros
+\def\veps{\varepsilon}
+\def\vepsi{\varepsilon_i}
+\def\eei{(\varepsilon \vee \varepsilon_i)}
+\def\ddj{(\delta \vee \delta_j)}
+
+%projection macros
+\newcommand{\projcell}[1][i]{\langle#1\rangle}
+\newcommand{\projext}[1][i]{\langle * \setminus#1\rangle}
+\def\projarr{\langle * \rangle}
+
+%paths macros
+%% \def\arrpath{\langle * \rangle}
+%% \def\cellpath{\langle i \rangle}
+%% \def\outpath{\langle * \setminus i \rangle}
+
+%wf
+\def\inps{\mathcal{I}}
+\def\outs{\mathcal{O}}
+
+% tabular column
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+% tikz figures for example
+% Preparation for Variant, Structure and Array diagrams with arrows and red and green
+
+\def\tmul{*1mm}
+\def\dtriangle#1#2#3#4#5{%
+  \tikz[remember picture, baseline={(dottriangle-x#1.base)}]{%
+    \node[inner sep=0pt] (dottriangle-x#1) {\phantom{$x$}};%
+    \node[dot,#2] (dottriangle-dot#1) at ($(dottriangle-x#1.base)!.5!(dottriangle-x#1.north)$) {};%
+    %% The anchors and size of the isosceles triangle are not well positionned.
+    % \node[draw, shape=isosceles triangle, shape border rotate=90, anchor=north,#2,isosceles triangle stretches,inner sep=0pt,minimum width=#3\tmul,minimum height=#4\tmul] (t) at (dot.center) {};
+    \draw[#2] (dottriangle-dot#1.center) -- ++(.5*#3\tmul,-#4\tmul) coordinate (dottriangle-te#1) -- ++(-#3\tmul,0) coordinate (dottriangle-tw#1) -- cycle;
+    \coordinate (dottriangle-tc#1) at (barycentric cs:dottriangle-dot#1=1,dottriangle-te#1=1,dottriangle-tw#1=1);
+    \begin{pgfonlayer}{background}
+    \node[fit=(dottriangle-dot#1) (dottriangle-te#1) (dottriangle-tw#1),#5] (dottriangle-bg#1) {};
+    \end{pgfonlayer}
+  }%
+}
+
+\def\defaultinnersep{1.3mm}
+\tikzset{
+  resetinnersep/.style={inner sep=\defaultinnersep,},
+}
+
+\def\dottriangle#1#2#3#4#5#6{%
+  \node[resetinnersep,inner sep=0pt,anchor=base west,opacity=0] (predottriangle-x-#2) at #1 {\phantom{$x$}};%
+  \node[resetinnersep,dot,anchor=south,#3,xshift=.5*#4\tmul,opacity=0] (predottriangle-dot-#2) at (predottriangle-x-#2.base west) {};%
+  %% The anchors and size of the isosceles triangle are not well positionned.
+  % \node[draw, shape=isosceles triangle, shape border rotate=90, anchor=north,#3,isosceles triangle stretches,inner sep=0pt,minimum width=#4\tmul,minimum height=#5\tmul] (t) at (dot.center) {};
+  \draw[resetinnersep,#3,opacity=0] (predottriangle-dot-#2.center) -- ++(.5*#4\tmul,-#5\tmul) coordinate (predottriangle-te-#2) -- ++(-#4\tmul,0) coordinate (predottriangle-tw-#2) -- cycle;
+%%%%%%%%%%%%
+  % \begin{pgfonlayer}{background}
+    \node[resetinnersep,fit=(predottriangle-dot-#2) (predottriangle-te-#2) (predottriangle-tw-#2)] (dottriangle-isep-#2) {};
+    \node[inner sep=.7mm,fit=(predottriangle-dot-#2) (predottriangle-te-#2) (predottriangle-tw-#2),#6] (dottriangle-bg-#2) {};
+  % \end{pgfonlayer}
+%%%%%%%%%%%% same as above, but put above the background.
+  \node[resetinnersep,inner sep=0pt,anchor=base west] (dottriangle-x-#2) at #1 {\phantom{$x$}};%
+  \node[resetinnersep,dot,anchor=south,#3,xshift=.5*#4\tmul] (dottriangle-dot-#2) at (dottriangle-x-#2.base west) {};%
+  %% The anchors and size of the isosceles triangle are not well positionned.
+  % \node[draw, shape=isosceles triangle, shape border rotate=90, anchor=north,#3,isosceles triangle stretches,inner sep=0pt,minimum width=#4\tmul,minimum height=#5\tmul] (t) at (dot.center) {};
+  \draw[resetinnersep,#3] (dottriangle-dot-#2.center) -- ++(.5*#4\tmul,-#5\tmul) coordinate (dottriangle-te-#2) -- ++(-#4\tmul,0) coordinate (dottriangle-tw-#2) -- cycle;
+%%%%%%%%%%%%
+  \coordinate (dottriangle-tc-#2) at (barycentric cs:dottriangle-dot-#2=1,dottriangle-te-#2=1,dottriangle-tw-#2=1);
+  \node[inner sep=0pt,fit=(predottriangle-dot-#2) (predottriangle-te-#2) (predottriangle-tw-#2)] (dottriangle-boundingbox-#2) {};
+}
+
+%Some colors
+\definecolor{coolgrey}{rgb}{0.55, 0.57, 0.67}
+\definecolor{fgred}{rgb}{0.66, 0.13, 0.24}
+\definecolor{yonder}{rgb}{0.64, 0.68, 0.82}
+\definecolor{tangerine}{rgb}{1.0, 0.6, 0.4}
+\definecolor{salmon}{rgb}{1.0, 0.63, 0.48}
+\definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
+\definecolor{cream}{rgb}{1.0, 0.99, 0.82}
+\definecolor{deepchampagne}{rgb}{0.98, 0.84, 0.65}
+\definecolor{burntsienna}{rgb}{0.91, 0.45, 0.32}
+
+
+% This is the definition of join_k
+\def\bigijoin{%
+  \alignedmathop{%
+    \bigvee%
+  }{%
+    \mathchoice%
+    {\bigvee\mkern-8mu\smash{\raisebox{-0.9ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\intra}}}$}}}%
+    {\bigvee\mkern-7mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\intra}}}$}}}%
+    {\bigvee\mkern-2.25mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\intra}}}$}}}%
+    {\bigvee\mkern-2.5mu\smash{\raisebox{-0.35ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+  }%
+}
+\def\largeijoin{%
+  \alignedmathop{%
+    \bigvee%
+  }{%
+    \mathchoice%
+    {\bigvee\mkern-8mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+    {\bigvee\mkern-5mu\smash{\raisebox{-0.6ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\intra}}}$}}}%
+    {\bigvee\mkern-2.25mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{\mathlarger{{}_{\intra}}}$}}}%
+    {\bigvee\mkern-2.5mu\smash{\raisebox{-0.35ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+  }%
+}
+\def\ijoin{%
+  \alignedmathop{%
+    \vee%
+  }{%
+    \mathchoice%
+    {\vee\mkern-4mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+    {\vee\mkern-3mu\smash{\raisebox{-0.1ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+    {\vee\mkern-2.25mu\smash{\raisebox{-0.3ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+    {\vee\mkern-2.5mu\smash{\raisebox{-0.35ex}{$\resetstyle\mathlarger{{}_{\intra}}$}}}%
+  }%
+}
