@@ -7,3 +7,5 @@
 *.out
 *.toc
 *.lof
+travis-deploy-key-id_rsa
+travis-deploy-key-id_rsa.pub
